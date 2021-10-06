@@ -1,8 +1,12 @@
 [tool.poetry]
 name = "wxtcli"
 version = "0.1.0"
-description = ""
+description = "A CLI application for interacting with Cisco Webex Teams"
 authors = ["Billy Zoellers <billy.zoellers@mac.com>"]
+readme = "README.md"
+
+[tool.poetry.scripts]
+wxtcli = "wxtcli.main:app"
 
 [tool.poetry.dependencies]
 python = "^3.9"
