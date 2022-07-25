@@ -148,3 +148,44 @@ def list_caller_ids(
     console.print(table)
 
 
+@app.command()
+def update_location_allcids(
+    location_name: str = typer.Argument(..., help="Webex Calling Location Name"),
+    caller_id: str = typer.Argument("LOCATION_NUMBER", help="Caller ID | LOCATION_NUMBER | DIRECT_LINE")
+):
+    """
+    Update caller IDs for all people in a location
+    """
+    # Determine Caller ID  type
+    caller_id_types = ["LOCATION_NUMBER", "DIRECT_LINE"]
+    custom_number = None
+    if(caller_id not in caller_id_types):
+        custom_number = caller_id
+        caller_id = "CUSTOM"
+
+    # First locationId of interest
+    locations = api_req("locations")
+    locationId = next(location["id"] for location in locations if location["name"] == location_name)
+
+    # Find people belonging to that locationId
+    people = api_req("people", params={
+        "callingData": True,
+        "locationId": locationId,
+    })
+
+    # Set callerId for each person
+
+    for person in track(people):
+        if (custom_number == None):
+            caller_id_resp = api_req(f"people/{person['id']}/features/callerId", method = "put", json = {
+                "selected" : caller_id
+            })
+        else:
+            caller_id_resp = api_req(f"people/{person['id']}/features/callerId", method = "put", json = {
+                "selected" : caller_id,
+                "customNumber" : custom_number
+            })
+
+        
+
+    
