@@ -4,13 +4,108 @@ Billy Zoellers
 
 People module
 """
+from select import select
 import typer
+from enum import Enum
+from typing import Optional
 from wxtcli.console import console
 from wxtcli.api import api, api_req
 from wxtcli.helpers.formatting import table_with_columns, humanize_wxt_datetime
 from rich.progress import track
 
 app = typer.Typer()
+
+class CallerIdNamePolicy(str, Enum):
+    """
+    Name policy for Caller ID
+    """
+    DIRECT_LINE = "DIRECT_LINE"
+    LOCATION = "LOCATION"
+    OTHER = "OTHER"
+
+class CallerIdSelectedType(str, Enum):
+    """
+    Numer type for Caller ID
+    """
+    DIRECT_LINE = "DIRECT_LINE"
+    LOCATION_NUMER = "LOCATION_NUMBER"
+    CUSTOM = "CUSTOM"
+
+@app.command()
+def update_user_cid(
+    user_email: str = typer.Argument(..., help="Webex user email"),
+    selected_type: Optional[CallerIdSelectedType] = typer.Option(None, help="Type of number"),
+    name_policy: Optional[CallerIdNamePolicy] = typer.Option(None, help="Caller ID name policy"),
+    custom_number: Optional[str] = typer.Option(None, help="Custom number"),
+    cid_first_name: Optional[str] = typer.Option(None, help="CID first name"),
+    cid_last_name: Optional[str] = typer.Option(None, help="CID last name"),
+    other_name: Optional[str] = typer.Option(None, help="Other CID name")
+):
+    """
+    Update the Caller ID for a Webex Calling user
+    """
+    # Require a custom number when CUSTOM type is selected
+    if selected_type == CallerIdSelectedType.CUSTOM and custom_number is None:
+        console.print(f"[red]You must specify a '--custom-number'")
+        raise typer.Abort()
+
+    # Require a custom name when OTHER name is selected
+    if name_policy == CallerIdNamePolicy.OTHER and other_name is None:
+        console.print(f"[red]You must specify a '--other-name'")
+        raise typer.Abort()
+
+    # API requires both values to be set at same time
+    if name_policy is not None and selected_type is None:
+        console.print(f"[red]You must set '--selected-type' at the same time as '--name-policy'")
+
+    # Find Webex Calling person
+    person = api_req("people", params={
+        "email": user_email,
+        "callingData": True,
+    })
+    if not person:
+        console.print(f"[red]Person with email '{user_email}' not found.")
+        raise typer.Abort()
+    person = person[0]
+    console.print(f"[green]Found user [bold]{person['displayName']}[/bold] with extension [bold]{person['extension']}[/bold]")
+
+    # Get current CID data
+    cid_data = api_req(f"people/{person['id']}/features/callerId")
+    console.print(f" [green]Current CID Type: {cid_data['selected']}")
+
+    # Update values
+    updated_values = {}
+
+    # Update CID type
+    if selected_type is not None:
+        updated_values["selected"] = selected_type.value
+        if selected_type == CallerIdSelectedType.CUSTOM:
+            updated_values["customNumber"] = custom_number
+
+    # Update CID name
+    if name_policy is not None:
+        updated_values["externalCallerIdNamePolicy"] = name_policy.value
+        if name_policy == CallerIdNamePolicy.OTHER:
+            updated_values["customExternalCallerIdName"] = other_name
+
+    # Update CID first name
+    if cid_first_name is not None:
+        updated_values["firstName"] = cid_first_name
+
+    # Update CID last name
+    if cid_last_name is not None:
+        updated_values["lastName"] = cid_last_name
+
+    # Commit updated values
+    console.print("[yellow]The following values will be updated:")
+    console.print(updated_values)
+    api_req(f"people/{person['id']}/features/callerId", method="put", json=updated_values)
+
+
+{
+    "selected": "CUSTOM",
+    "customNumber": "8594257735"
+}
 
 @app.command()
 def list_caller_ids(
