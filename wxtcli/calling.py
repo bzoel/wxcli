@@ -14,7 +14,7 @@ app = typer.Typer()
 
 @app.command()
 def list_caller_ids(
-    location_name: str
+    location_name: str = typer.Argument(..., help="Webex Calling Location Name")
 ):
     """
     List caller IDs for all people in a location
