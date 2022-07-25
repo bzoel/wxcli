@@ -6,7 +6,7 @@ A CLI application based on Typer for interating with Cisco Webex (Teams)
 """
 import typer
 from wxtcli.console import console
-from wxtcli import rooms, people, teams
+from wxtcli import rooms, people, teams, calling
 
 def create_wxt():
   """
@@ -17,3 +17,4 @@ app = typer.Typer()
 app.add_typer(rooms.app, name="rooms")
 app.add_typer(people.app, name="people")
 app.add_typer(teams.app, name="teams")
+app.add_typer(calling.app, name="calling")
