@@ -1,8 +1,8 @@
 """
-wxtcli - people.py
-Billy Zoellers
+wxtcli - calling.py
+Billy Zoellers / David Rice
 
-People module
+Calling module
 """
 from select import select
 import typer
