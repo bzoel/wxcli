@@ -17,23 +17,38 @@ app = typer.Typer()
 
 @app.command()
 def list_voicemail_settings(
-    location_name: str = typer.Option(None, help="Webex Calling Location Name")
-):
+    location_name: str = typer.Option(None, help="Webex Calling Location Name"),
+    org_id: str = typer.Option(None, help="Organization ID")):
     """
     List Voicemail settings for all people (in a location, if specified)
     """
+    orgId=None
+    if (org_id is not None):
+        orgId = api_req(f"organizations/{org_id}")["id"]
 
     people = []
     if(location_name is not None):
         # First locationId of interest
-        locations = api_req("locations")
+        if (org_id is not None):
+            locations = api_req("locations", params={
+            "orgId": org_id,
+        })
+        else:
+            locations = api_req("locations")
         locationId = next(location["id"] for location in locations if location["name"] == location_name)
 
         # Find people belonging to that locationId
-        people = api_req("people", params={
-            "callingData": True,
-            "locationId": locationId,
-        })
+        if (orgId is not None):
+            people = api_req("people", params={
+                "callingData": True,
+                "locationId": locationId,
+                "orgId": orgId,
+            })
+        else:
+            people = api_req("people", params={
+                "callingData": True,
+                "locationId": locationId,
+            })
     else:
         # Find people belonging to all locationId's (avoids dealing with non-WxC Users)
         locations = api_req("locations")
@@ -49,7 +64,13 @@ def list_voicemail_settings(
         ["Person", "Extension", "VM Enabled", "Send Busy", "SendNoAnswer", "Notifications","EmailVM","Email Address", "Storage"], title="Voicemail Info"
     )
     for person in track(people):
-        voicemail_info = api_req(f"people/{person['id']}/features/voicemail")
+        if (org_id is not None):
+            voicemail_info = api_req(f"people/{person['id']}/features/voicemail", params={
+                "orgId": orgId
+            })
+        else:
+            voicemail_info = api_req(f"people/{person['id']}/features/voicemail")
+
 
         table.add_row(
             person["displayName"],
@@ -68,17 +89,33 @@ def list_voicemail_settings(
 @app.command()
 def update_allvms(
     location_name: str = typer.Option(None, help="Webex Calling Location Name"),
+    org_id: str = typer.Option(None, help="Organization ID"),
 ):
     """
     Update Voicemail To Email for all people in a location to their Webex Email Address
     """
+    orgId=None
+    if (org_id is not None):
+        orgId = api_req(f"organizations/{org_id}")["id"]
 
     # First locationId of interest
-    locations = api_req("locations")
+    if (org_id is not None):
+        locations = api_req("locations", params={
+        "orgId": org_id,
+    })
+    else:
+        locations = api_req("locations")
     locationId = next(location["id"] for location in locations if location["name"] == location_name)
 
     # Find people belonging to that locationId
-    people = api_req("people", params={
+    if (orgId is not None):
+        people = api_req("people", params={
+            "callingData": True,
+            "locationId": locationId,
+            "orgId": orgId,
+        })
+    else:
+        people = api_req("people", params={
         "callingData": True,
         "locationId": locationId,
     })
@@ -86,10 +123,20 @@ def update_allvms(
     # Set Voicemai to Email for each person
 
     for person in track(people):
-        vm_email_resp = api_req(f"people/{person['id']}/features/voicemail", method = "put", json = {
-            "emailCopyOfMessage": {
-                "enabled": True,
-                "emailId": person["emails"][0]
-            }
-        })
+        if (org_id is not None):
+            vm_email_resp = api_req(f"people/{person['id']}/features/voicemail", method = "put", json = {
+                "emailCopyOfMessage": {
+                    "enabled": True,
+                    "emailId": person["emails"][0],
+                }
+            }, params= {
+                "orgId": orgId,
+            })
+        else:
+            vm_email_resp = api_req(f"people/{person['id']}/features/voicemail", method = "put", json = {
+                "emailCopyOfMessage": {
+                    "enabled": True,
+                    "emailId": person["emails"][0]
+                }
+            })
 
