@@ -38,6 +38,8 @@ def api_req(resource, method="get", **kwargs):
     if resp.text:
         if "items" in resp.json().keys():
             return resp.json()["items"]
+        if "phoneNumbers" in resp.json().keys():
+            return resp.json()["phoneNumbers"]
         return resp.json()
     
     return {}
