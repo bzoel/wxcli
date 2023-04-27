@@ -7,9 +7,9 @@ Rooms module
 import typer
 from typing import Optional
 from enum import Enum
-from wxtcli.console import console
-from wxtcli.api import api
-from wxtcli.helpers.formatting import table_with_columns, humanize_wxt_datetime
+from wxcli.console import console
+from wxcli.api import api
+from wxcli.helpers.formatting import table_with_columns, humanize_wxt_datetime
 
 app = typer.Typer()
 

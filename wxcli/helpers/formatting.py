@@ -9,7 +9,7 @@ from rich.table import Table
 from webexteamssdk import WebexTeamsDateTime
 import humanize
 from datetime import datetime, timedelta
-from wxtcli.console import console
+from wxcli.console import console
 
 
 def table_with_columns(columns: list, title: str) -> Table:

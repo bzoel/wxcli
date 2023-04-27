@@ -6,7 +6,7 @@ Global API object
 """
 import requests
 from webexteamssdk import WebexTeamsAPI
-from wxtcli.console import console
+from wxcli.console import console
 
 api = WebexTeamsAPI()
 

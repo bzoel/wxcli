@@ -5,9 +5,9 @@ Billy Zoellers
 Teams module
 """
 import typer
-from wxtcli.console import console
-from wxtcli.api import api
-from wxtcli.helpers.formatting import table_with_columns
+from wxcli.console import console
+from wxcli.api import api
+from wxcli.helpers.formatting import table_with_columns
 
 app = typer.Typer()
 
