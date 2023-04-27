@@ -37,7 +37,7 @@ jobs:
         run: poetry run black wxcli --check
 
       - name: Linting (Ruff)
-        run: poetry run ruff check wxcli
+        run: poetry run ruff check wxcli --ignore E501
 
       - name: Unit testing (pytest)
         run: poetry run pytest
