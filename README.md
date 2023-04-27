@@ -1,4 +1,4 @@
-# wxCLI - CLI tools for managaing Cisco Webex
+# wxCLI - CLI tools for managing Cisco Webex
 
 ## Purpose
 CLI tools for interacting with Cisco Webex APIs. Tools are created as they're needed for implementation and management, and primarily focus aroudn management of Cisco Webex Calling.
