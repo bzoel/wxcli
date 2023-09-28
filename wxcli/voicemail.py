@@ -4,93 +4,73 @@ David Rice
 
 Voicemail module
 """
+from select import select
 import typer
-from wxcli.console import console
-from wxcli.api import api_req
-from wxcli.helpers.formatting import table_with_columns
+from enum import Enum
+from typing import Optional
+from wxtcli.console import console
+from wxtcli.api import api, api_req
+from wxtcli.helpers.formatting import table_with_columns, humanize_wxt_datetime
 from rich.progress import track
 
 app = typer.Typer()
 
-
 @app.command()
 def list_voicemail_settings(
     location_name: str = typer.Option(None, help="Webex Calling Location Name"),
-    org_id: str = typer.Option(None, help="Organization ID"),
-):
+    org_id: str = typer.Option(None, help="Organization ID")):
     """
     List Voicemail settings for all people (in a location, if specified)
     """
-    orgId = None
-    if org_id is not None:
+    orgId=None
+    if (org_id is not None):
         orgId = api_req(f"organizations/{org_id}")["id"]
 
     people = []
-    if location_name is not None:
+    if(location_name is not None):
         # First locationId of interest
-        if org_id is not None:
-            locations = api_req(
-                "locations",
-                params={
-                    "orgId": org_id,
-                },
-            )
+        if (org_id is not None):
+            locations = api_req("locations", params={
+            "orgId": org_id,
+        })
         else:
             locations = api_req("locations")
-        locationId = next(
-            location["id"]
-            for location in locations
-            if location["name"] == location_name
-        )
+        locationId = next(location["id"] for location in locations if location["name"] == location_name)
 
         # Find people belonging to that locationId
-        if orgId is not None:
-            people = api_req(
-                "people",
-                params={
-                    "callingData": True,
-                    "locationId": locationId,
-                    "orgId": orgId,
-                },
-            )
+        if (orgId is not None):
+            people = api_req("people", params={
+                "callingData": True,
+                "locationId": locationId,
+                "orgId": orgId,
+            })
         else:
-            people = api_req(
-                "people",
-                params={
-                    "callingData": True,
-                    "locationId": locationId,
-                },
-            )
+            people = api_req("people", params={
+                "callingData": True,
+                "locationId": locationId,
+            })
     else:
         # Find people belonging to all locationId's (avoids dealing with non-WxC Users)
         locations = api_req("locations")
         for location in locations:
-            people = people + api_req(
-                "people", params={"callingData": True, "locationId": location["id"]}
-            )
+            people = people + api_req("people", params={
+                "callingData": True,
+                "locationId": location["id"]
+            })
+
 
     # Find callerId for each person
     table = table_with_columns(
-        [
-            "Person",
-            "Extension",
-            "VM Enabled",
-            "Send Busy",
-            "SendNoAnswer",
-            "Notifications",
-            "EmailVM",
-            "Email Address",
-            "Storage",
-        ],
-        title="Voicemail Info",
+        ["Person", "Extension", "VM Enabled", "Send Busy", "SendNoAnswer", "Notifications","EmailVM","Email Address", "Storage"], title="Voicemail Info"
     )
     for person in track(people):
-        if org_id is not None:
-            voicemail_info = api_req(
-                f"people/{person['id']}/features/voicemail", params={"orgId": orgId}
-            )
+        if (org_id is not None):
+            voicemail_info = api_req(f"people/{person['id']}/features/voicemail", params={
+                "orgId": orgId
+            })
         else:
             voicemail_info = api_req(f"people/{person['id']}/features/voicemail")
+
 
         table.add_row(
             person["displayName"],
@@ -100,10 +80,8 @@ def list_voicemail_settings(
             "Yes" if voicemail_info["sendUnansweredCalls"]["enabled"] else "No",
             "Yes" if voicemail_info["notifications"]["enabled"] else "No",
             "Yes" if voicemail_info["emailCopyOfMessage"]["enabled"] else "No",
-            voicemail_info["emailCopyOfMessage"]["emailId"]
-            if voicemail_info["emailCopyOfMessage"]["enabled"]
-            else "N/A",
-            voicemail_info["messageStorage"]["storageType"],
+            voicemail_info["emailCopyOfMessage"]["emailId"] if voicemail_info["emailCopyOfMessage"]["enabled"] else "N/A",
+            voicemail_info["messageStorage"]["storageType"]
         )
     console.print(table)
 
@@ -116,68 +94,52 @@ def update_allvms(
     """
     Update Voicemail To Email for all people in a location to their Webex Email Address
     """
-    orgId = None
-    if org_id is not None:
+    orgId=None
+    if (org_id is not None):
         orgId = api_req(f"organizations/{org_id}")["id"]
 
     # First locationId of interest
-    if org_id is not None:
-        locations = api_req(
-            "locations",
-            params={
-                "orgId": org_id,
-            },
-        )
+    if (org_id is not None):
+        locations = api_req("locations", params={
+        "orgId": org_id,
+    })
     else:
         locations = api_req("locations")
-    locationId = next(
-        location["id"] for location in locations if location["name"] == location_name
-    )
+    
+    for location in locations:
+        if location["name"] == location_name:
+            locationId = location["id"] 
 
     # Find people belonging to that locationId
-    if orgId is not None:
-        people = api_req(
-            "people",
-            params={
-                "callingData": True,
-                "locationId": locationId,
-                "orgId": orgId,
-            },
-        )
+    if (orgId is not None):
+        people = api_req("people", params={
+            "callingData": True,
+            "locationId": locationId,
+            "orgId": orgId,
+        })
     else:
-        people = api_req(
-            "people",
-            params={
-                "callingData": True,
-                "locationId": locationId,
-            },
-        )
+        people = api_req("people", params={
+        "callingData": True,
+        "locationId": locationId,
+    })
 
     # Set Voicemai to Email for each person
 
     for person in track(people):
-        if org_id is not None:
-            api_req(
-                f"people/{person['id']}/features/voicemail",
-                method="put",
-                json={
-                    "emailCopyOfMessage": {
-                        "enabled": True,
-                        "emailId": person["emails"][0],
-                    }
-                },
-                params={
-                    "orgId": orgId,
-                },
-            )
+        if (org_id is not None):
+            vm_email_resp = api_req(f"people/{person['id']}/features/voicemail", method = "put", json = {
+                "emailCopyOfMessage": {
+                    "enabled": True,
+                    "emailId": person["emails"][0],
+                }
+            }, params= {
+                "orgId": orgId,
+            })
         else:
-            api_req(
-                f"people/{person['id']}/features/voicemail",
-                method="put",
-                json={
-                    "emailCopyOfMessage": {
-                        "enabled": True,
-                        "emailId": person["emails"][0],
-                    }
-                },
-            )
+            vm_email_resp = api_req(f"people/{person['id']}/features/voicemail", method = "put", json = {
+                "emailCopyOfMessage": {
+                    "enabled": True,
+                    "emailId": person["emails"][0]
+                }
+            })
+
