@@ -292,25 +292,26 @@ def all_phone_apply_config(
         for device in devices["devices"]:
             device_type=device["model"]
             device_mac=device["mac"]
-            table.add_row(
-                person["displayName"],
-                person["extension"],
-                device["model"],
-                device["mac"],
-                device["type"]
-            )
+            #table.add_row(
+            #    person["displayName"],
+            #    person["extension"],
+            #    device["model"],
+            #    device["mac"],
+            #    device["type"]
+            #)
             if (device["type"] == "SHARED_CALL_APPEARANCE"):
                 console.print(device['id'])
-            #if (device["type"] == "PRIMARY"):
-            #    if (org_id is not None):
-            #        result = api_req(f"telephony/config/devices/{device['id']}/actions/applyChanges/invoke", method="post", params={
-            #            "orgId": orgId,
-            #        })
-            #    else:
-            #        result = api_req(f"telephony/config/devices/{device['id']}/actions/applyChanges/invoke", method="post")
+            if (device["type"] == "PRIMARY"):
+                if (org_id is not None):
+                    result = api_req(f"telephony/config/devices/{device['id']}/actions/applyChanges/invoke", method="post", params={
+                        "orgId": orgId,
+                    })
+                    #console.print(result)
+                else:
+                    result = api_req(f"telephony/config/devices/{device['id']}/actions/applyChanges/invoke", method="post")
+                    #console.print(result)
             
             #result = api_req(f"telephony/config/devices/{device['id']}/settings")
-            #console.print(result)
     #console.print(table)            
 
     

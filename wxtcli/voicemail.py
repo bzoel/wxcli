@@ -105,7 +105,10 @@ def update_allvms(
     })
     else:
         locations = api_req("locations")
-    locationId = next(location["id"] for location in locations if location["name"] == location_name)
+    
+    for location in locations:
+        if location["name"] == location_name:
+            locationId = location["id"] 
 
     # Find people belonging to that locationId
     if (orgId is not None):

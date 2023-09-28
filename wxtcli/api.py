@@ -9,6 +9,7 @@ from webexteamssdk import WebexTeamsAPI
 from wxtcli.console import console
 
 api = WebexTeamsAPI()
+baseurl = "https://webexapis.com/v1/"
 
 def api_req(resource, method="get", **kwargs):
     """
@@ -21,7 +22,7 @@ def api_req(resource, method="get", **kwargs):
     }
 
     resp = requests.request(
-        url=f"{api.base_url}/{resource}",
+        url=f"{api.base_url}{resource}",
         method=method,
         headers=headers,
         **kwargs
@@ -39,6 +40,7 @@ def api_req(resource, method="get", **kwargs):
         if "items" in resp.json().keys():
             return resp.json()["items"]
         if "phoneNumbers" in resp.json().keys():
+            console.print("phoneNumbers")
             return resp.json()["phoneNumbers"]
         return resp.json()
     
