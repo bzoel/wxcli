@@ -12,6 +12,10 @@ from wxcli.helpers.formatting import table_with_columns
 
 app = typer.Typer()
 
+"""
+List all workspaces with caller ID information
+"""
+
 
 @app.command()
 def list_workspace_callerid(

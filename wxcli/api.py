@@ -10,6 +10,7 @@ from wxcli.console import console
 
 api = WebexTeamsAPI()
 
+
 def api_req(resource, method="get", **kwargs):
     """
     Make an API request to Webex that is not contained
@@ -17,22 +18,19 @@ def api_req(resource, method="get", **kwargs):
     """
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Bearer {api.access_token}"
+        "Authorization": f"Bearer {api.access_token}",
     }
 
     resp = requests.request(
-        url=f"{api.base_url}/{resource}",
-        method=method,
-        headers=headers,
-        **kwargs
+        url=f"{api.base_url}/{resource}", method=method, headers=headers, **kwargs
     )
 
     resp.raise_for_status()
 
     # Handle pagination
     if "next" in resp.links.keys():
-        next_resource = resp.links["next"]["url"].replace( 
-            "https://webexapis.com/v1/", "" 
+        next_resource = resp.links["next"]["url"].replace(
+            "https://webexapis.com/v1/", ""
         )
         console.log(next_resource)
         return resp.json()["items"] + api_req(next_resource)
@@ -43,5 +41,5 @@ def api_req(resource, method="get", **kwargs):
         if "phoneNumbers" in resp.json().keys():
             return resp.json()["phoneNumbers"]
         return resp.json()
-    
+
     return {}
