@@ -4,13 +4,10 @@ David Rice
 
 Voicemail module
 """
-from select import select
 import typer
-from enum import Enum
-from typing import Optional
 from wxcli.console import console
-from wxcli.api import api, api_req
-from wxcli.helpers.formatting import table_with_columns, humanize_wxt_datetime
+from wxcli.api import api_req
+from wxcli.helpers.formatting import table_with_columns
 from rich.progress import track
 
 app = typer.Typer()

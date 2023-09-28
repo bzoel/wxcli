@@ -4,13 +4,12 @@ Billy Zoellers / David Rice
 
 Calling module
 """
-from select import select
 import typer
 from enum import Enum
 from typing import Optional
 from wxcli.console import console
-from wxcli.api import api, api_req
-from wxcli.helpers.formatting import table_with_columns, humanize_wxt_datetime
+from wxcli.api import api_req
+from wxcli.helpers.formatting import table_with_columns
 from rich.progress import track
 
 app = typer.Typer()
@@ -55,18 +54,18 @@ def update_user_cid(
     """
     # Require a custom number when CUSTOM type is selected
     if selected_type == CallerIdSelectedType.CUSTOM and custom_number is None:
-        console.print(f"[red]You must specify a '--custom-number'")
+        console.print("[red]You must specify a '--custom-number'")
         raise typer.Abort()
 
     # Require a custom name when OTHER name is selected
     if name_policy == CallerIdNamePolicy.OTHER and other_name is None:
-        console.print(f"[red]You must specify a '--other-name'")
+        console.print("[red]You must specify a '--other-name'")
         raise typer.Abort()
 
     # API requires both values to be set at same time
     if name_policy is not None and selected_type is None:
         console.print(
-            f"[red]You must set '--selected-type' at the same time as '--name-policy'"
+            "[red]You must set '--selected-type' at the same time as '--name-policy'"
         )
 
     # Find Webex Calling person
@@ -260,7 +259,7 @@ def update_location_allcids(
     # Set callerId for each person
 
     for person in track(people):
-        if custom_number == None:
+        if custom_number is None:
             if org_id is not None:
                 caller_id_resp = api_req(
                     f"people/{person['id']}/features/callerId",
