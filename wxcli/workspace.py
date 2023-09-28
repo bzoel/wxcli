@@ -12,10 +12,6 @@ from wxcli.helpers.formatting import table_with_columns
 
 app = typer.Typer()
 
-"""
-List all workspaces with caller ID information
-"""
-
 
 @app.command()
 def list_workspace_callerid(
@@ -169,3 +165,88 @@ def update_workspace_callerid_csv(
                         "customNumber": "+" + row["CallerID-Number"],
                     },
                 )
+
+
+def get_location_id(orgId, location):
+    locationInfo = []
+    if orgId is not None:
+        locationInfo = api_req(
+            "locations",
+            params={
+                "name": location,
+                "orgId": orgId,
+            },
+        )
+    else:
+        locationInfo = api_req(
+            "locations",
+            params={
+                "name": location,
+            },
+        )
+    # print(f"locationInfo[0][id]={locationInfo[0]['id']}")
+    return locationInfo[0]["id"]
+
+
+@app.command()
+def add_workspace_calling_csv(
+    org_id: str = typer.Option(None, help="Organization ID"),
+    csvfile: str = typer.Option(None, help="Path to CSV File"),
+):
+    if csvfile is None:
+        console.log("Missing filename")
+        return None
+
+    orgId = None
+    if org_id is not None:
+        orgId = api_req(f"organizations/{org_id}")["id"]
+
+    # print(f"orgId={orgId}")
+    # print(f"org_id={org_id}")
+    with open(csvfile) as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            # print(f"Name={row['Name']}")
+            locationId = get_location_id(orgId=orgId, location=row["Location"])
+            phoneNumber = "+1" + row["Direct Dial"]
+            extension = row["Extension"]
+            displayName = row["Name"]
+            if org_id is not None:
+                res = api_req(
+                    "workspaces",
+                    method="post",
+                    json={
+                        "displayName": displayName,
+                        "orgId": orgId,
+                        "type": "other",
+                        "supportedDevices": "phones",
+                        "calling": {
+                            "type": "webexCalling",
+                            "webexCalling": {
+                                "phoneNumber": phoneNumber,
+                                "extension": extension,
+                                "locationId": locationId,
+                            },
+                        },
+                    },
+                )
+            else:
+                res = api_req(
+                    "workspaces",
+                    method="post",
+                    json={
+                        "displayName": displayName,
+                        "type": "other",
+                        "supportedDevices": "phones",
+                        "calling": {
+                            "type": "webexCalling",
+                            "webexCalling": {
+                                "phoneNumber": phoneNumber,
+                                "extension": extension,
+                                "locationId": locationId,
+                            },
+                        },
+                    },
+                )
+
+            print(f"res={res}")

@@ -22,7 +22,7 @@ def api_req(resource, method="get", **kwargs):
     }
 
     resp = requests.request(
-        url=f"{api.base_url}/{resource}", method=method, headers=headers, **kwargs
+        url=f"{api.base_url}{resource}", method=method, headers=headers, **kwargs
     )
 
     resp.raise_for_status()
