@@ -6,10 +6,9 @@ Global API object
 """
 import requests
 from webexteamssdk import WebexTeamsAPI
-from wxtcli.console import console
+from wxcli.console import console
 
 api = WebexTeamsAPI()
-baseurl = "https://webexapis.com/v1/"
 
 def api_req(resource, method="get", **kwargs):
     """
@@ -22,7 +21,7 @@ def api_req(resource, method="get", **kwargs):
     }
 
     resp = requests.request(
-        url=f"{api.base_url}{resource}",
+        url=f"{api.base_url}/{resource}",
         method=method,
         headers=headers,
         **kwargs
@@ -32,7 +31,9 @@ def api_req(resource, method="get", **kwargs):
 
     # Handle pagination
     if "next" in resp.links.keys():
-        next_resource = resp.links["next"]["url"].replace("https://webexapis.com/v1/", "")
+        next_resource = resp.links["next"]["url"].replace( 
+            "https://webexapis.com/v1/", "" 
+        )
         console.log(next_resource)
         return resp.json()["items"] + api_req(next_resource)
 
@@ -40,7 +41,6 @@ def api_req(resource, method="get", **kwargs):
         if "items" in resp.json().keys():
             return resp.json()["items"]
         if "phoneNumbers" in resp.json().keys():
-            console.print("phoneNumbers")
             return resp.json()["phoneNumbers"]
         return resp.json()
     

@@ -1,17 +1,18 @@
 """
-wxtcli - main.py
+wxcli - main.py
 Billy Zoellers
 
 A CLI application based on Typer for interating with Cisco Webex (Teams)
 """
 import typer
-from wxtcli.console import console
-from wxtcli import rooms, people, teams, calling, voicemail, workspace
+from wxcli import rooms, people, teams, calling, voicemail, workspace
+
 
 def create_wxt():
-  """
-  Typer callback to create session to Webex Teams
-  """
+    """
+    Typer callback to create session to Webex Teams
+    """
+
 
 app = typer.Typer()
 app.add_typer(rooms.app, name="rooms")
