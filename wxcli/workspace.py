@@ -208,9 +208,13 @@ def add_workspace_calling_csv(
         for row in reader:
             # print(f"Name={row['Name']}")
             locationId = get_location_id(orgId=orgId, location=row["Location"])
-            phoneNumber = "+1" + row["Direct Dial"]
-            extension = row["Extension"]
-            displayName = row["Name"]
+            displayName= row["Name"]
+            wxcData = {
+                "extension": row["Extension"],
+                "locationId": get_location_id(orgId=orgId, location=row["Location"]),
+            }
+            if row["Direct Dial"] != "":
+                wxcData["phoneNumber"] = "+1"+row["Direct Dial"] 
             if org_id is not None:
                 res = api_req(
                     "workspaces",
@@ -222,11 +226,7 @@ def add_workspace_calling_csv(
                         "supportedDevices": "phones",
                         "calling": {
                             "type": "webexCalling",
-                            "webexCalling": {
-                                "phoneNumber": phoneNumber,
-                                "extension": extension,
-                                "locationId": locationId,
-                            },
+                            "webexCalling": wxcData,
                         },
                     },
                 )
@@ -240,11 +240,7 @@ def add_workspace_calling_csv(
                         "supportedDevices": "phones",
                         "calling": {
                             "type": "webexCalling",
-                            "webexCalling": {
-                                "phoneNumber": phoneNumber,
-                                "extension": extension,
-                                "locationId": locationId,
-                            },
+                            "webexCalling":  wxcData,
                         },
                     },
                 )
