@@ -187,6 +187,7 @@ def get_location_id(orgId, location):
     # print(f"locationInfo[0][id]={locationInfo[0]['id']}")
     return locationInfo[0]["id"]
 
+
 def checkWorkspaceExists(orgId, displayName):
     if orgId is not None:
         res = api_req(
@@ -203,8 +204,9 @@ def checkWorkspaceExists(orgId, displayName):
                 "displayName": displayName,
             },
         )
-    #console.log(res,)
+    # console.log(res,)
     return len(res) > 0
+
 
 @app.command()
 def add_workspace_calling_csv(
@@ -226,14 +228,16 @@ def add_workspace_calling_csv(
         for row in reader:
             # print(f"Name={row['Name']}")
             locationId = get_location_id(orgId=orgId, location=row["Location"])
-            displayName= row["Name"]
-            if(checkWorkspaceExists(orgId,displayName)==False):
+            displayName = row["Name"]
+            if checkWorkspaceExists(orgId, displayName) == False:
                 wxcData = {
                     "extension": row["Extension"],
-                    "locationId": get_location_id(orgId=orgId, location=row["Location"]),
+                    "locationId": get_location_id(
+                        orgId=orgId, location=row["Location"]
+                    ),
                 }
                 if len(row["Direct Dial"]) == 10:
-                    wxcData["phoneNumber"] = "+1"+row["Direct Dial"] 
+                    wxcData["phoneNumber"] = "+1" + row["Direct Dial"]
                 if org_id is not None:
                     res = api_req(
                         "workspaces",
@@ -259,7 +263,7 @@ def add_workspace_calling_csv(
                             "supportedDevices": "phones",
                             "calling": {
                                 "type": "webexCalling",
-                                "webexCalling":  wxcData,
+                                "webexCalling": wxcData,
                             },
                         },
                     )
